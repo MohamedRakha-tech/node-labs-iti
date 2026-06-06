@@ -9,9 +9,30 @@ const cors = require('cors');
 const app = express();
 const dotenv = require('dotenv');
 dotenv.config();
-// app level middleware
+
+// Security middleware
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const mongoSanitize = require('express-mongo-sanitize');
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: 'Too many requests from this IP.'
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: 'Too many auth attempts from this IP.'
+});
+
+app.use(helmet());
+app.use(mongoSanitize());
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '10kb' }));
+app.use('/auth', authLimiter);
+app.use(limiter);
 
 // routes
 app.use('/auth', authRoutes);
@@ -26,9 +47,13 @@ app.use((req, res, next) => {
 // Global Error Handler middleware
 app.use(errorHandler);
 
-
 const MONGODB_URI = process.env.MONGODB_URI;
 const PORT = process.env.PORT || 3000;
+
+if (!MONGODB_URI) {
+  console.error('MONGODB_URI is not set. Exiting.');
+  process.exit(1);
+}
 
 mongoose
   .connect(MONGODB_URI)
@@ -40,4 +65,15 @@ mongoose
   })
   .catch((err) => {
     console.error('Database connection failed:', err);
+    process.exit(1);
   });
+
+process.on('unhandledRejection', (err) => {
+  console.error('UNHANDLED REJECTION:', err);
+  process.exit(1);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('UNCAUGHT EXCEPTION:', err);
+  process.exit(1);
+});

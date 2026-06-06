@@ -11,14 +11,14 @@ const userSchema = new Schema(
       type: String,
       required: true,
       unique: true,
-      index: true,
-      match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Please fill a valid email address']
+      match: [/^\S+@\S+\.\S+$/, 'Please fill a valid email address']
     },
     password: {
       type: String,
-      required: true
+      required: true,
+      select: false
     },
-      role: {
+    role: {
       type: String,
       enum: ['user', 'admin'],
       default: 'user'
@@ -26,5 +26,12 @@ const userSchema = new Schema(
   },
   { timestamps: true }
 );
+
+userSchema.set('toJSON', {
+  transform: (doc, ret) => {
+    delete ret.__v;
+    return ret;
+  }
+});
 
 module.exports = mongoose.model('User', userSchema);

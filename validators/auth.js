@@ -10,8 +10,8 @@ const signupSchema = {
       'string.email': 'Please enter a valid email.',
       'any.required': 'Email is required.'
     }),
-    password: Joi.string().min(5).trim().required().messages({
-      'string.min': 'Password must be at least 5 characters long.',
+    password: Joi.string().min(6).trim().required().messages({
+      'string.min': 'Password must be at least 6 characters long.',
       'any.required': 'Password is required.'
     })
   }).unknown(false)
@@ -23,7 +23,8 @@ const loginSchema = {
       'string.email': 'Please enter a valid email.',
       'any.required': 'Email is required.'
     }),
-    password: Joi.string().trim().required().messages({
+    password: Joi.string().min(6).trim().required().messages({
+      'string.min': 'Password must be at least 6 characters long.',
       'string.empty': 'Password must not be empty.',
       'any.required': 'Password is required.'
     })

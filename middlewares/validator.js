@@ -7,22 +7,22 @@ module.exports = (schema) => {
 
     for (const key of validations) {
       if (schema[key]) {
-        const { error, value } = schema[key].validate(req[key], { abortEarly: false });
+        const { error, value } = schema[key].validate(req[key], {
+          abortEarly: false,
+          allowUnknown: false
+        });
         if (error) {
-          error.details.forEach((detail) => {
+          error.details.forEach((err) => {
             errors.push({
-              path: detail.path.join('.'),
-              msg: detail.message
+              field: err.path.join('.'),
+              message: err.message
             });
           });
         } else {
-          // Replace request key with validated and normalized/cast value
           req[key] = value;
         }
       }
     }
-
-    
 
     if (errors.length > 0) {
       const apiError = new APIError(422, 'Validation failed.');

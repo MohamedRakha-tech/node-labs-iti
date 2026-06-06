@@ -13,9 +13,6 @@ module.exports = (req, res, next) => {
   } catch (err) {
     return next(new APIError(401, 'Not authenticated. Invalid or expired token.'));
   }
-  if (!decodedToken) {
-    return next(new APIError(401, 'Not authenticated. Invalid or expired token.'));
-  }
 
   req.userId = decodedToken.userId;
   req.userRole = decodedToken.role;

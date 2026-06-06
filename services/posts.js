@@ -1,5 +1,4 @@
 const Post = require('../models/post');
-const User = require('../models/user');
 const APIError = require('../utils/APIERROR');
 
 exports.getAllPosts = async () => {
@@ -23,11 +22,10 @@ exports.createPost = async (postData, userId) => {
   });
 
   await post.save();
-  const user = await User.findById(userId);
 
   return {
     post: post,
-    creator: { _id: user._id, name: user.name }
+    creator: { _id: userId }
   };
 };
 

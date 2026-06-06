@@ -11,15 +11,14 @@ exports.signup = async (userData) => {
     email: email,
     password: hashedPassword,
     name: name,
-    role: 'user',
-    posts: []
+    role: 'user'
   });
   const result = await user.save();
   return result._id;
 };
 
 exports.login = async (email, password) => {
-  const user = await User.findOne({ email: email });
+  const user = await User.findOne({ email: email }).select('+password');
   if (!user) {
     throw new APIError(401, 'A user with this email could not be found.');
   }
