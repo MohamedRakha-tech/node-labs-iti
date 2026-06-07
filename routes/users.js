@@ -4,6 +4,7 @@ const isAuth = require('../middlewares/is-auth');
 const authorizedTo = require('../middlewares/autherization');
 const validator = require('../middlewares/validator');
 const userSchemas = require('../validators/UserSchema');
+const { checkEmailExists, checkEmailExistsForUpdate } = require('../middlewares/checkEmail');
 
 const router = express.Router();
 
@@ -21,10 +22,20 @@ router.get(
 router.get('/:userId', validator(userSchemas.getUser), usersController.getUserById);
 
 // POST /users
-router.post('/', validator(userSchemas.createUser), usersController.createUser);
+router.post(
+  '/',
+  validator(userSchemas.createUser),
+  checkEmailExists,
+  usersController.createUser
+);
 
 // PUT /users/:userId
-router.put('/:userId', validator(userSchemas.updateUser), usersController.updateUser);
+router.put(
+  '/:userId',
+  validator(userSchemas.updateUser),
+  checkEmailExistsForUpdate,
+  usersController.updateUser
+);
 
 // DELETE /users/:userId
 router.delete('/:userId', validator(userSchemas.deleteUser), usersController.deleteUser);
