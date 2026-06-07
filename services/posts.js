@@ -1,8 +1,27 @@
 const Post = require('../models/post');
 const APIError = require('../utils/APIERROR');
 
-exports.getAllPosts = async () => {
-  return await Post.find().populate('creator', 'name email');
+exports.getAllPosts = async (page = 1, limit = 10, userId) => {
+  const skip = (page - 1) * limit;
+  const totalItems = await Post.countDocuments();
+  // add flag to my post to identify if the post is created by the logged in user or not
+  const posts = await Post.find()
+    .skip(skip)
+    .limit(limit)
+    .populate('creator', 'name email').lean();
+  
+  const result = posts.map(post => {
+    return {
+      ...post,
+      isMine: post.creator._id.toString() === userId
+    };
+  });
+  return {
+    posts: result,
+    totalItems,
+    totalPages: Math.ceil(totalItems / limit),
+    currentPage: page
+  };
 };
 
 exports.getPostById = async (postId) => {

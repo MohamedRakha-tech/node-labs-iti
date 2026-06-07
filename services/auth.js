@@ -18,6 +18,7 @@ exports.signup = async (userData) => {
 };
 
 exports.login = async (email, password) => {
+  
   const user = await User.findOne({ email: email }).select('+password');
   if (!user) {
     throw new APIError(401, 'A user with this email could not be found.');

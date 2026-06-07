@@ -45,5 +45,11 @@ module.exports = {
   createUser: { body: createUserBodySchema },
   updateUser: { params: idParamSchema, body: updateUserBodySchema },
   getUser:    { params: idParamSchema },
-  deleteUser: { params: idParamSchema }
+  deleteUser: { params: idParamSchema },
+  getAllUsers: {
+    query: Joi.object({
+      page: Joi.number().integer().min(1).optional(),
+      limit: Joi.number().integer().min(1).max(100).optional()
+    }).unknown(false)
+  }
 };

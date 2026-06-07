@@ -10,7 +10,7 @@ exports.validateSignup = [
       const userDoc = await User.findOne({ email: req.body.email });
       if (userDoc) {
         const apiError = new APIError(422, 'Validation failed.');
-        apiError.data = [{ path: 'email', msg: 'E-Mail address already exists!' }];
+        apiError.data = [{ field: 'email', msg: 'E-Mail address already exists!' }];
         return next(apiError);
       }
       next();

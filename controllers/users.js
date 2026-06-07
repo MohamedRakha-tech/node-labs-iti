@@ -2,10 +2,17 @@ const usersService = require('../services/users');
 
 exports.getAllUsers = async (req, res, next) => {
   try {
-    const users = await usersService.getAllUsers();
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const result = await usersService.getAllUsers(page, limit);
     res.status(200).json({
       message: 'Fetched users successfully.',
-      users: users
+      users: result.users,
+      pagination: {
+        currentPage: result.currentPage,
+        totalPages: result.totalPages,
+        totalItems: result.totalItems
+      }
     });
   } catch (err) {
     next(err);

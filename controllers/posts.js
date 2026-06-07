@@ -2,10 +2,17 @@ const postsService = require('../services/posts');
 
 exports.getAllPosts = async (req, res, next) => {
   try {
-    const posts = await postsService.getAllPosts();
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const result = await postsService.getAllPosts(page, limit, req.userId);
     res.status(200).json({
       message: 'Fetched posts successfully.',
-      posts: posts
+      posts: result.posts,
+      pagination: {
+        currentPage: result.currentPage,
+        totalPages: result.totalPages,
+        totalItems: result.totalItems
+      }
     });
   } catch (err) {
     next(err);

@@ -17,6 +17,7 @@ module.exports = (err, req, res, next) => {
     return res.status(400).json({ message: 'Invalid ID format' });
   }
 
+  
   // custom errors
   if (err instanceof APIError) {
     return res.status(err.statusCode).json({

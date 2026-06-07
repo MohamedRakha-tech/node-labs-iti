@@ -1,17 +1,21 @@
 const express = require('express');
 const usersController = require('../controllers/users');
 const isAuth = require('../middlewares/is-auth');
-const isAdmin = require('../middlewares/is-admin');
+const authorizedTo = require('../middlewares/autherization');
 const validator = require('../middlewares/validator');
 const userSchemas = require('../validators/UserSchema');
 
 const router = express.Router();
 
 // All routes here require authentication AND admin role
-router.use(isAuth, isAdmin);
+router.use(isAuth, authorizedTo('admin'));
 
 // GET /users
-router.get('/', usersController.getAllUsers);
+router.get(
+  '/',
+  validator(userSchemas.getAllUsers),
+  usersController.getAllUsers
+);
 
 // GET /users/:userId
 router.get('/:userId', validator(userSchemas.getUser), usersController.getUserById);

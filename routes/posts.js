@@ -7,7 +7,11 @@ const postSchemas = require('../validators/posts');
 const router = express.Router();
 
 // GET /posts
-router.get('/', postsController.getAllPosts);
+router.get(
+  '/',isAuth,
+  validator(postSchemas.getAllPosts),
+  postsController.getAllPosts
+);
 
 // GET /posts/:id
 router.get(

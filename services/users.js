@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const Post = require('../models/post');
 const APIError = require('../utils/APIERROR');
 
 exports.signup = async (userData) => {
@@ -44,8 +45,18 @@ exports.login = async (email, password) => {
   };
 };
 
-exports.getAllUsers = async () => {
-  return await User.find();
+exports.getAllUsers = async (page = 1, limit = 10) => {
+  const skip = (page - 1) * limit;
+  const totalItems = await User.countDocuments();
+  const users = await User.find()
+    .skip(skip)
+    .limit(limit);
+  return {
+    users,
+    totalItems,
+    totalPages: Math.ceil(totalItems / limit),
+    currentPage: page
+  };
 };
 
 exports.getUserById = async (userId) => {
@@ -86,5 +97,6 @@ exports.deleteUser = async (userId) => {
   if (!user) {
     throw new APIError(404, 'Could not find user.');
   }
+  await Post.deleteMany({ creator: userId });
   await User.findByIdAndDelete(userId);
 };

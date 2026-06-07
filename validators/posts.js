@@ -32,6 +32,13 @@ const getPostSchema = {
   params: idParamSchema
 };
 
+const getAllPostsSchema = {
+  query: Joi.object({
+    page: Joi.number().integer().min(1).optional(),
+    limit: Joi.number().integer().min(1).max(100).optional()
+  }).unknown(false)
+};
+
 const deletePostSchema = {
   params: idParamSchema
 };
@@ -40,5 +47,6 @@ module.exports = {
   createPost: createPostSchema,
   updatePost: updatePostSchema,
   getPost: getPostSchema,
-  deletePost: deletePostSchema
+  deletePost: deletePostSchema,
+  getAllPosts: getAllPostsSchema
 };

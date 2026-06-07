@@ -11,24 +11,12 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 // Security middleware
+const hpp = require('hpp');
 const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
-const mongoSanitize = require('express-mongo-sanitize');
+const { limiter, authLimiter } = require('./middlewares/ratelimiter');
 
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  message: 'Too many requests from this IP.'
-});
-
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 20,
-  message: 'Too many auth attempts from this IP.'
-});
-
+app.use(hpp());
 app.use(helmet());
-app.use(mongoSanitize());
 app.use(cors());
 app.use(express.json({ limit: '10kb' }));
 app.use('/auth', authLimiter);
@@ -55,8 +43,16 @@ if (!MONGODB_URI) {
   process.exit(1);
 }
 
+// Enable built-in NoSQL injection protection in Mongoose
+mongoose.set('sanitizeFilter', true);
+
 mongoose
-  .connect(MONGODB_URI)
+  .connect(MONGODB_URI ,{
+    maxPoolSize: 10,
+    serverSelectionTimeoutMS: 5000,
+    retryWrites: true,
+    w: 'majority'
+  })
   .then(() => {
     console.log('Connected to MongoDB!');
     app.listen(PORT, () => {
