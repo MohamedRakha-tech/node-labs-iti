@@ -31,3 +31,25 @@ exports.sendWelcomeEmail = async (user) => {
     html,
   });
 };
+
+exports.sendDonationReceipt = async (donation, user) => {
+  if (!user.email) return;
+
+  const html = await ejs.renderFile(
+    path.join(__dirname, '..', 'views', 'emails', 'donationReceipt.ejs'),
+    {
+      name: user.name,
+      amount: donation.amount,
+      donationId: donation._id,
+      date: new Date().toLocaleDateString(),
+      year: new Date().getFullYear(),
+    }
+  );
+
+  return transporter.sendMail({
+    from: process.env.EMAIL_USER,
+    to: user.email,
+    subject: 'Donation Received - Thank You!',
+    html,
+  });
+};

@@ -8,7 +8,7 @@ const errorHandler = require('./middlewares/errorHandler');
 const APIError = require('./utils/APIERROR');
 const cors = require('cors');
 const app = express();
-
+app.use(require('morgan')('dev'));
 // Security middleware
 const hpp = require('hpp');
 const helmet = require('helmet');
@@ -26,6 +26,7 @@ app.use(express.static('public'));
 app.use('/auth', authRoutes);
 app.use('/posts', postRoutes);
 app.use('/users', userRoutes);
+app.use('/donations', require('./routes/donations'));
 
 
 // 404 Not Found fallback

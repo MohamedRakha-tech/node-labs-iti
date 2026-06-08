@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: #059669; color: #fff; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+    .body { padding: 20px; background: #f9fafb; border: 1px solid #e5e7eb; }
+    .footer { text-align: center; padding: 15px; font-size: 12px; color: #6b7280; }
+    h1 { margin: 0; }
+    .amount { font-size: 24px; font-weight: bold; color: #059669; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Thank You for Your Donation!</h1>
+    </div>
+    <div class="body">
+      <p>Dear <strong><%= name %></strong>,</p>
+      <p>Thank you for your generous donation! Your support means a lot to us.</p>
+      <p class="amount"><%= amount %> EGP</p>
+      <p>Your contribution helps us continue our mission. Here's a summary:</p>
+      <ul>
+        <li><strong>Donation ID:</strong> <%= donationId %></li>
+        <li><strong>Amount:</strong> <%= amount %> EGP</li>
+        <li><strong>Date:</strong> <%= date %></li>
+        <li><strong>Status:</strong> Completed</li>
+      </ul>
+      <p>Best regards,<br>Blog Team</p>
+    </div>
+    <div class="footer">
+      &copy; <%= year %> Blog. All rights reserved.
+    </div>
+  </div>
+</body>
+</html>
