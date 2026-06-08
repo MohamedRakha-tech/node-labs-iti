@@ -1,57 +1,33 @@
-# ITI Day 2 - Social Media API
+# Social API
 
-A robust RESTful API built with Node.js and Express, following the Controller-Service architecture. This project provides a secure and scalable foundation for a social media or blog application, featuring user authentication, post management, and advanced security protections.
+A full-featured REST API built with Node.js and Express for a social media/blog platform. Features real-time chat, dual payment gateway support, role-based access control, and social interactions.
 
-## 🚀 Features
+## Features
 
-- **Authentication & Authorization**: Secure signup and login using JWT (JSON Web Tokens) and password hashing with `bcryptjs`.
-- **Role-Based Access Control (RBAC)**: Fine-grained permissions for `user` and `admin` roles.
-- **Post Management**: Full CRUD operations for posts with ownership verification.
-- **User Management**: Comprehensive user profiles and administrative controls.
-- **Input Validation**: Rigorous request body and parameter validation using `Joi` and `express-validator`.
-- **Global Error Handling**: Centralized error management with custom `APIError` classes.
-- **Security First**: 
-    - **Helmet**: Secure HTTP headers.
-    - **HPP**: Protection against HTTP Parameter Pollution.
-    - **NoSQL Injection Protection**: Sanitization of user input.
-    - **Rate Limiting**: Protection against Brute-force and DoS attacks.
-    - **CORS**: Cross-Origin Resource Sharing enabled.
+- **Authentication & Authorization**: Secure signup, login, and password reset using JWT. Role-based access for `user` and `admin`.
+- **Cooking Photos (Posts)**: Create, read, update, and delete blog posts.
+- **Social Interactions**: Like, follow, and comment on posts. Real-time chat system using WebSockets.
+- **Dual Payments**: Supports both Stripe and Kashier payment gateways with secure webhooks.
+- **Admin Controls**: Manage users, posts, and view all platform donations.
 
-## 🛠️ Tech Stack
+## Tech Stack
 
-- **Runtime**: Node.js
+- **Runtime**: Node.js (v20+)
 - **Framework**: Express.js (v5.x)
 - **Database**: MongoDB with Mongoose (ODM)
 - **Authentication**: JWT, bcryptjs
-- **Validation**: Joi, express-validator
-- **Security**: Helmet, HPP, express-mongo-sanitize, express-rate-limit
+- **Validation**: Joi
+- **Real-time Communication**: Socket.io
+- **Payments**: Stripe, Kashier
+- **Testing**: Jest, Supertest, mongodb-memory-server
 
-## 📦 Key Packages
+## Prerequisites
 
-| Package | Description |
-| :--- | :--- |
-| `express` | Fast, unopinionated, minimalist web framework. |
-| `mongoose` | Elegant MongoDB object modeling. |
-| `jsonwebtoken` | JWT implementation for secure authentication. |
-| `bcryptjs` | Optimized bcrypt in JavaScript for password hashing. |
-| `joi` | Schema description language and data validator. |
-| `express-validator` | Middleware for string validation and sanitization. |
-| `helmet` | Helps secure Express apps by setting various HTTP headers. |
-| `hpp` | Middleware to protect against HTTP Parameter Pollution. |
-| `express-rate-limit` | Basic rate-limiting middleware for Express. |
-| `dotenv` | Loads environment variables from a `.env` file. |
-| `cors` | Middleware for enabling CORS. |
+- Node.js 20.x or higher
+- MongoDB (local or remote)
+- pnpm (or npm / yarn)
 
-## 🏗️ Architecture
-
-The project follows a modular **Controller-Service** pattern:
-- **Models**: Mongoose schemas defining the data structure.
-- **Services**: Contain the core business logic and database interactions.
-- **Controllers**: Handle HTTP requests, call services, and return responses.
-- **Routes**: Map endpoints to their respective controllers.
-- **Middlewares**: Reusable logic for authentication, validation, and error handling.
-
-## ⚙️ Installation
+## Installation
 
 1.  **Clone the repository**:
     ```bash
@@ -64,15 +40,10 @@ The project follows a modular **Controller-Service** pattern:
     pnpm install
     ```
 
-3.  **Environment Setup**:
-    Create a `.env` file in the root directory and configure the following:
-    ```env
-    PORT=3000
-    MONGODB_URI=mongodb://localhost:27017/iti-blog
-    JWT_SECRET=your_super_secret_key
-    ```
+3.  **Set up environment variables**:
+    Create a `.env` file in the root directory. See `.env.example` for the required variables.
 
-4.  **Run the application**:
+4.  **Start the server**:
     - Development mode (with nodemon):
       ```bash
       pnpm dev
@@ -82,23 +53,148 @@ The project follows a modular **Controller-Service** pattern:
       pnpm start
       ```
 
-## 📜 API Documentation (Simplified)
+## Environment Variables
+
+Create a `.env` file in the root directory and configure the following:
+
+```env
+# Server
+PORT=3000
+NODE_ENV=development
+CLIENT_URL=http://localhost:5173
+
+# MongoDB - Connection string for your database
+MONGODB_URI=mongodb://localhost:27017/your-db-name
+
+# JWT - Generate a strong secret using: openssl rand -hex 32
+JWT_SECRET=your-secret-key
+
+# Email (Gmail App Password)
+EMAIL_USER=your-email@gmail.com
+EMAIL_PASS=your-gmail-app-password
+
+# Kashier Payment Gateway
+PAYMENT_GATEWAY_KEY=your-kashier-api-key
+PAYMENT_GATEWAY_SECRET=your-kashier-secret-key
+KASHIER_MERCHANT_ID=your xxxx
+KASHIER_WEBHOOK_URL=https://your-ngrok-url.ngrok-free.app/donations/webhook
+
+# Stripe Payment Gateway
+STRIPE_SECRET_KEY=sk_test_your-stripe-secret-key
+STRIPE_PUBLISHABLE_KEY=pk_test_your-stripe-publishable-key
+STRIPE_WEBHOOK_SECRET=whsec_x'xxxxx
+```
+
+## API Endpoints
 
 ### Auth
-- `POST /auth/signup` - Register a new user.
-- `POST /auth/login` - Authenticate a user and receive a token.
+
+| Method | Endpoint | Auth | Description |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/auth/signup` | — | Register a new user |
+| `POST` | `/auth/login` | — | Authenticate a user and receive a token |
+| `POST` | `/auth/forgot-password` | — | Request password reset link |
+| `POST` | `/auth/reset-password/:token` | — | Reset password  |
+| `GET` | `/auth/csrf-token` | — | Get a new CSRF token |
 
 ### Posts
-- `GET /posts` - Retrieve all posts.
-- `POST /posts` - Create a new post (Auth required).
-- `GET /posts/:id` - Get post details.
-- `PATCH /posts/:id` - Update a post (Ownership required).
-- `DELETE /posts/:id` - Delete a post (Ownership/Admin required).
+
+| Method | Endpoint | Auth | Description |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/posts` | Yes | Retrieve all posts |
+| `GET` | `/posts/:id` | — | Get post details |
+| `POST` | `/posts` | Yes | Create a new post |
+| `PUT` | `/posts/:id` | Yes | Update a post |
+| `DELETE` | `/posts/:id` | Yes | Delete a post |
+| `POST` | `/posts/:id/like` | Yes | Toggle like on a post |
+
+### Comments
+
+| Method | Endpoint | Auth | Description |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/posts/:postId/comments` | — | Retrieve all comments on a post |
+| `POST` | `/posts/:postId/comments` | Yes | Add a comment to a post |
+| `DELETE` | `/comments/:commentId` | Yes | Delete a comment |
 
 ### Users
-- `GET /users` - List all users (Admin required).
-- `GET /users/:id` - Get user profile.
-- `DELETE /users/:id` - Delete a user (Admin required).
 
----
-*Developed as part of the ITI Node.js course.*
+| Method | Endpoint | Auth | Description |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/users` | Admin | List all users |
+| `GET` | `/users/:userId` | Admin | Get user profile |
+| `POST` | `/users` | Admin | Create a user |
+| `PUT` | `/users/:userId` | Admin | Update a user |
+| `DELETE` | `/users/:userId` | Admin | Delete a user |
+| `POST` | `/users/:userId/follow` | Yes | Toggle follow status |
+
+### Chat
+
+| Method | Endpoint | Auth | Description |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/chats` | Yes | Get all user's chats |
+| `GET` | `/chats/:userId` | Yes | Get or create a chat |
+| `GET` | `/chats/:chatId/messages` | Yes | Get messages in a chat |
+| `PATCH` | `/chats/:chatId/read` | Yes | Mark messages as read |
+
+### Donations
+
+| Method | Endpoint | Auth | Description |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/donations` | Yes | Create a donation (Kashier) |
+| `POST` | `/donations/webhook` | — | Kashier webhook |
+| `GET` | `/donations` | Yes | List user's donations |
+| `GET` | `/donations/all` | Admin | List all donations |
+| `POST` | `/donations/stripe/create-payment-intent` | Yes | Create a Stripe payment |
+| `POST` | `/donations/stripe/webhook` | — | Stripe webhook |
+
+### WebSocket Events
+
+All socket.io events for the real-time chat feature are listed here:
+
+| Event | Direction | Description |
+| :--- | :--- | :--- |
+| `chat:send` | Client -> Server | Send a message in a chat |
+| `chat:message` | Server -> Client | New message broadcast |
+| `chat:typing` | Bidirectional | Typing indicator |
+| `chat:read` | Client -> Server | Mark messages as read |
+
+## Testing
+
+The project includes a suite of tests to  codebase quality  :
+
+```bash
+# Run all tests
+pnpm test
+
+# Watch mode
+pnpm test:watch
+```
+
+## Project Structure
+
+```
+│  1.  app.js              # Application entry point
+│  2.  controllers/        # HTTP request handlers
+│  3.  services/            # Business logic and database interactions
+│  4.  models/              # Mongoose schemas
+│  5.  routes/               # API route definitions
+│  6.  middlewares/          # Custom express middleware
+│  7.  validators/           # Joi validation schemas
+│  8.  utils/                # Utility functions
+│  9.  tests/                # Test suite
+└─10.  public/               # Static files
+```
+
+## Architecture
+
+This project follows the `Controller-Service` pattern for a clean separation of concerns:
+
+- ** promise and **Middlewares** provide robust security.
+
+## Contributing
+
+Contributions , bug reports , and feature requests are welcome ! For major changes, please open an issue first to discuss what you would like to change .
+
+## License
+
+[ISC]
