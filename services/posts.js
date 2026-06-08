@@ -1,5 +1,6 @@
 const Post = require('../models/post');
 const APIError = require('../utils/APIERROR');
+const { getIO } = require('./socket');
 
 exports.getAllPosts = async (page = 1, limit = 10, userId) => {
   const skip = (page - 1) * limit;
@@ -42,10 +43,9 @@ exports.createPost = async (postData, userId) => {
 
   await post.save();
 
-  return {
-    post: post,
-    creator: { _id: userId }
-  };
+  const result = { post, creator: { _id: userId } };
+  getIO().emit('post:created', result);
+  return result;
 };
 
 exports.updatePost = async (postId, postData, userId) => {
@@ -61,7 +61,9 @@ exports.updatePost = async (postId, postData, userId) => {
 
   post.title = title;
   post.content = content;
-  return await post.save();
+  const updated = await post.save();
+  getIO().emit('post:updated', updated);
+  return updated;
 };
 
 exports.deletePost = async (postId, userId) => {
@@ -75,4 +77,5 @@ exports.deletePost = async (postId, userId) => {
   }
 
   await Post.findByIdAndDelete(postId);
+  getIO().emit('post:deleted', { postId });
 };

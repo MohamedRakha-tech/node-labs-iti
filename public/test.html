@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Socket.IO Test</title>
+  <script src="https://cdn.socket.io/4.8.3/socket.io.min.js"></script>
+  <style>
+    body { font-family: monospace; padding: 20px; background: #111; color: #0f0; }
+    #log { white-space: pre-wrap; margin-top: 10px; }
+    .event { margin: 2px 0; padding: 4px 8px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h3>Socket.IO Notifications</h3>
+  <p>Status: <span id="status">disconnected</span></p>
+  <div id="log"></div>
+
+  <script>
+    const log = document.getElementById('log');
+    const status = document.getElementById('status');
+
+    function add(msg, color = '#0f0') {
+      const div = document.createElement('div');
+      div.className = 'event';
+      div.style.color = color;
+      div.textContent = msg;
+      log.appendChild(div);
+    }
+
+    const socket = io('http://localhost:3000');
+
+    socket.on('connect', () => {
+      status.textContent = 'connected (' + socket.id + ')';
+      status.style.color = '#0f0';
+      add('✅ Connected: ' + socket.id, '#0f0');
+      socket.emit('join', 'admin');
+      add('👑 Joined room: admin', '#ff0');
+    });
+
+    socket.on('disconnect', () => {
+      status.textContent = 'disconnected';
+      status.style.color = '#f00';
+      add('❌ Disconnected', '#f00');
+    });
+
+    socket.on('post:created',  (d) => add('📝 post:created  ' + JSON.stringify(d), '#0ff'));
+    socket.on('post:updated',  (d) => add('✏️ post:updated  ' + JSON.stringify(d), '#0ff'));
+    socket.on('post:deleted',  (d) => add('🗑️ post:deleted  ' + JSON.stringify(d), '#0ff'));
+    socket.on('user:registered', (d) => add('👤 user:registered ' + JSON.stringify(d), '#f0f'));
+    socket.on('user:created',  (d) => add('🛠️ user:created  ' + JSON.stringify(d), '#f0f'));
+    socket.on('user:updated',  (d) => add('🛠️ user:updated  ' + JSON.stringify(d), '#f0f'));
+    socket.on('user:deleted',  (d) => add('🛠️ user:deleted  ' + JSON.stringify(d), '#f0f'));
+  </script>
+</body>
+</html>

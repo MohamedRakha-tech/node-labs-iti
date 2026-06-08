@@ -2,6 +2,8 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const APIError = require('../utils/APIERROR');
+const { getIO } = require('./socket');
+const { sendWelcomeEmail } = require('./emailService');
 
 exports.signup = async (userData) => {
   const { email, password, name } = userData;
@@ -14,6 +16,10 @@ exports.signup = async (userData) => {
     role: 'user'
   });
   const result = await user.save();
+  sendWelcomeEmail(result).catch(err => {
+    console.error('Error sending welcome email:', err);
+  });
+  getIO().emit('user:registered', { userId: result._id, email: result.email });
   return result._id;
 };
 

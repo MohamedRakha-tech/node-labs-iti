@@ -1,3 +1,4 @@
+const dotenv = require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const authRoutes = require('./routes/auth');
@@ -7,8 +8,6 @@ const errorHandler = require('./middlewares/errorHandler');
 const APIError = require('./utils/APIERROR');
 const cors = require('cors');
 const app = express();
-const dotenv = require('dotenv');
-dotenv.config();
 
 // Security middleware
 const hpp = require('hpp');
@@ -21,11 +20,13 @@ app.use(cors());
 app.use(express.json({ limit: '10kb' }));
 app.use('/auth', authLimiter);
 app.use(limiter);
+app.use(express.static('public'));
 
 // routes
 app.use('/auth', authRoutes);
 app.use('/posts', postRoutes);
 app.use('/users', userRoutes);
+
 
 // 404 Not Found fallback
 app.use((req, res, next) => {
@@ -46,6 +47,8 @@ if (!MONGODB_URI) {
 // Enable built-in NoSQL injection protection in Mongoose
 mongoose.set('sanitizeFilter', true);
 
+const { initialize: initSocketIO } = require('./services/socket');
+
 mongoose
   .connect(MONGODB_URI ,{
     maxPoolSize: 10,
@@ -55,9 +58,11 @@ mongoose
   })
   .then(() => {
     console.log('Connected to MongoDB!');
-    app.listen(PORT, () => {
+    const server = app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
     });
+    let socketIO = initSocketIO(server);
+
   })
   .catch((err) => {
     console.error('Database connection failed:', err);
