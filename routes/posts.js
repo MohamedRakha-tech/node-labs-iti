@@ -3,6 +3,7 @@ const postsController = require('../controllers/posts');
 const isAuth = require('../middlewares/is-auth');
 const validator = require('../middlewares/validator');
 const postSchemas = require('../validators/posts');
+const upload = require('../middlewares/upload');
 
 const router = express.Router();
 
@@ -24,6 +25,7 @@ router.get(
 router.post(
   '/',
   isAuth,
+  upload.single('image'),
   validator(postSchemas.createPost),
   postsController.createPost
 );
@@ -32,6 +34,7 @@ router.post(
 router.put(
   '/:id',
   isAuth,
+  upload.single('image'),
   validator(postSchemas.updatePost),
   postsController.updatePost
 );
@@ -43,5 +46,16 @@ router.delete(
   validator(postSchemas.deletePost),
   postsController.deletePost
 );
+
+// POST /posts/:id/like
+router.post(
+  '/:id/like',
+  isAuth,
+  validator(postSchemas.getPost),
+  postsController.toggleLike
+);
+
+// Comment routes nested under posts
+router.use('/:postId/comments', require('./comment'));
 
 module.exports = router;

@@ -6,10 +6,14 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest --forceExit --detectOpenHandles",
+    "test:watch": "jest --watch"
   },
   "devDependencies": {
-    "nodemon": "^3.1.14"
+    "jest": "^30.4.2",
+    "mongodb-memory-server": "^11.2.0",
+    "nodemon": "^3.1.14",
+    "supertest": "^7.2.2"
   },
   "keywords": [],
   "author": "",
@@ -19,6 +23,7 @@
     "axios": "^1.17.0",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
+    "csrf-csrf": "^4.0.3",
     "dotenv": "^17.4.2",
     "ejs": "^6.0.1",
     "express": "^5.2.1",
@@ -31,10 +36,13 @@
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.6.3",
     "morgan": "^1.11.0",
+    "multer": "^2.1.1",
     "nodemailer": "^8.0.10",
     "query-string": "^6.14.1",
     "socket.io": "^4.8.3",
     "socket.io-client": "^4.8.3",
-    "underscore": "^1.13.8"
+    "stripe": "^22.2.0",
+    "underscore": "^1.13.8",
+    "uuid": "^14.0.0"
   }
 }

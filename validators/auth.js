@@ -34,7 +34,38 @@ const loginSchema = {
   }).unknown(false)
 };
 
+const forgotPasswordSchema = {
+  body: Joi.object({
+    email: Joi.string().email().required().messages({
+      'string.email': 'Please enter a valid email.',
+      'any.required': 'Email is required.'
+    })
+  }).unknown(false)
+};
+
+const resetPasswordSchema = {
+  params: Joi.object({
+    token: Joi.string().hex().length(64).required().messages({
+      'string.hex': 'Invalid token format.',
+      'string.length': 'Invalid token.',
+      'any.required': 'Token is required.'
+    })
+  }).unknown(false),
+  body: Joi.object({
+    password: Joi.string().min(6).trim().required().messages({
+      'string.min': 'Password must be at least 6 characters long.',
+      'any.required': 'Password is required.'
+    }),
+    confirmPassword: Joi.string().valid(Joi.ref('password')).required().messages({
+      'any.only': 'Confirm password must match password.',
+      'any.required': 'Confirm password is required.'
+    })
+  }).unknown(false)
+};
+
 module.exports = {
   signup: signupSchema,
-  login: loginSchema
+  login: loginSchema,
+  forgotPassword: forgotPasswordSchema,
+  resetPassword: resetPasswordSchema
 };

@@ -21,3 +21,5 @@ exports.validateSignup = [
 ];
 
 exports.validateLogin = validator(authSchemas.login);
+exports.validateForgotPassword = validator(authSchemas.forgotPassword);
+exports.validateResetPassword = validator(authSchemas.resetPassword);

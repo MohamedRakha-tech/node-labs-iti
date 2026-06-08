@@ -1,5 +1,6 @@
 const donationService = require('../services/donationService');
 const { sendDonationReceipt } = require('../services/emailService');
+const { parsePagination, paginatedResponse, successResponse } = require('../utils/helpers');
 
 exports.createDonation = async (req, res, next) => {
   try {
@@ -10,10 +11,7 @@ exports.createDonation = async (req, res, next) => {
       providerSessionId: gatewayRes._id,
       link: gatewayRes.sessionUrl,
     });
-    res.status(201).json({
-      status: 'success',
-      data: updatedDonation,
-    });
+    res.status(201).json(successResponse(updatedDonation));
   } catch (err) {
     next(err);
   }
@@ -35,7 +33,7 @@ exports.webHook = async (req, res, next) => {
       }
     }
 
-    res.status(200).json({ status: 'success', data: 'webhook received' });
+    res.status(200).json(successResponse({ received: true }));
   } catch (err) {
     next(err);
   }
@@ -43,14 +41,9 @@ exports.webHook = async (req, res, next) => {
 
 exports.listMyDonations = async (req, res, next) => {
   try {
-    const page = Math.max(1, parseInt(req.query.page) || 1);
-    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 10));
+    const { page, limit } = parsePagination(req.query, { maxLimit: 50 });
     const { data, total } = await donationService.listMyDonations(req.userId, page, limit);
-    res.status(200).json({
-      status: 'success',
-      data,
-      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
-    });
+    res.status(200).json(paginatedResponse(data, total, page, limit));
   } catch (err) {
     next(err);
   }
@@ -58,14 +51,9 @@ exports.listMyDonations = async (req, res, next) => {
 
 exports.listAllDonations = async (req, res, next) => {
   try {
-    const page = Math.max(1, parseInt(req.query.page) || 1);
-    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 10));
+    const { page, limit } = parsePagination(req.query, { maxLimit: 50 });
     const { data, total } = await donationService.listAllDonations(page, limit);
-    res.status(200).json({
-      status: 'success',
-      data,
-      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
-    });
+    res.status(200).json(paginatedResponse(data, total, page, limit));
   } catch (err) {
     next(err);
   }

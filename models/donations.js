@@ -5,6 +5,10 @@ const donationSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
+    currency: {
+        type: String,
+        default: 'usd',
+    },
     email:{
         type: String,
         required: true,

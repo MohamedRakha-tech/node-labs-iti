@@ -33,11 +33,12 @@ exports.getPostById = async (postId) => {
   return post;
 };
 
-exports.createPost = async (postData, userId) => {
+exports.createPost = async (postData, userId, filename) => {
   const { title, content } = postData;
   const post = new Post({
     title: title,
     content: content,
+    image: filename || undefined,
     creator: userId
   });
 
@@ -48,7 +49,7 @@ exports.createPost = async (postData, userId) => {
   return result;
 };
 
-exports.updatePost = async (postId, postData, userId) => {
+exports.updatePost = async (postId, postData, userId, filename) => {
   const { title, content } = postData;
   const post = await Post.findById(postId);
   if (!post) {
@@ -59,8 +60,9 @@ exports.updatePost = async (postId, postData, userId) => {
     throw new APIError(403, 'Not authorized!');
   }
 
-  post.title = title;
-  post.content = content;
+  if (title) post.title = title;
+  if (content) post.content = content;
+  if (filename) post.image = filename;
   const updated = await post.save();
   getIO().emit('post:updated', updated);
   return updated;
@@ -78,4 +80,20 @@ exports.deletePost = async (postId, userId) => {
 
   await Post.findByIdAndDelete(postId);
   getIO().emit('post:deleted', { postId });
+};
+
+exports.toggleLike = async (postId, userId) => {
+  const post = await Post.findById(postId);
+  if (!post) throw new APIError(404, 'Post not found.');
+
+  const alreadyLiked = post.likes.some((id) => id.toString() === userId);
+  if (alreadyLiked) {
+    post.likes.pull(userId);
+  } else {
+    post.likes.push(userId);
+  }
+
+  await post.save();
+  getIO().emit('post:liked', { postId, userId, liked: !alreadyLiked, likesCount: post.likes.length });
+  return { liked: !alreadyLiked, likesCount: post.likes.length };
 };

@@ -1,6 +1,9 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const path = require('path');
+const ejs = require('ejs');
 const User = require('../models/user');
+const ResetToken = require('../models/resetToken');
 const APIError = require('../utils/APIERROR');
 const { getIO } = require('./socket');
 const { sendWelcomeEmail } = require('./emailService');
@@ -49,4 +52,42 @@ exports.login = async (email, password) => {
     token: token,
     userId: user._id.toString()
   };
+};
+
+exports.forgotPassword = async (email) => {
+  const user = await User.findOne({ email });
+  if (!user) return;
+
+  const rawToken = await ResetToken.createToken(user._id);
+  const resetUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}/reset-password/${rawToken}`;
+
+  const html = await ejs.renderFile(
+    path.join(__dirname, '..', 'views', 'emails', 'resetPassword.ejs'),
+    { name: user.name, resetUrl, year: new Date().getFullYear() }
+  );
+
+  const nodeMailer = require('nodemailer');
+  const transporter = nodeMailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+
+  await transporter.sendMail({
+    from: process.env.EMAIL_USER,
+    to: user.email,
+    subject: 'Password Reset Request',
+    html,
+  });
+};
+
+exports.resetPassword = async (rawToken, newPassword) => {
+  const tokenDoc = await ResetToken.verifyToken(rawToken);
+  if (!tokenDoc) throw new APIError(400, 'Invalid or expired reset token.');
+
+  const hashedPassword = await bcrypt.hash(newPassword, 12);
+  await User.findByIdAndUpdate(tokenDoc.userId, { password: hashedPassword });
+  await ResetToken.deleteMany({ userId: tokenDoc.userId });
 };

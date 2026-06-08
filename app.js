@@ -9,7 +9,14 @@ const APIError = require('./utils/APIERROR');
 const cors = require('cors');
 const app = express();
 app.use(require('morgan')('dev'));
-// Security middleware
+
+const requiredEnv = ['MONGODB_URI', 'JWT_SECRET'];
+const missing = requiredEnv.filter(k => !process.env[k]);
+if (missing.length) {
+  console.error(`Missing required env vars: ${missing.join(', ')}`);
+  process.exit(1);
+}
+
 const hpp = require('hpp');
 const helmet = require('helmet');
 const { limiter, authLimiter } = require('./middlewares/ratelimiter');
@@ -17,6 +24,11 @@ const { limiter, authLimiter } = require('./middlewares/ratelimiter');
 app.use(hpp());
 app.use(helmet());
 app.use(cors());
+app.use(require('express-mongo-sanitize')());
+
+// Stripe routes mounted before global json parser so webhook gets raw body
+app.use('/donations/stripe', require('./routes/stripe'));
+
 app.use(express.json({ limit: '10kb' }));
 app.use('/auth', authLimiter);
 app.use(limiter);
@@ -26,6 +38,7 @@ app.use(express.static('public'));
 app.use('/auth', authRoutes);
 app.use('/posts', postRoutes);
 app.use('/users', userRoutes);
+app.use('/chats', require('./routes/chat'));
 app.use('/donations', require('./routes/donations'));
 
 

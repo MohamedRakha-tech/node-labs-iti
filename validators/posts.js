@@ -19,13 +19,22 @@ const postBodySchema = Joi.object({
   })
 }).unknown(false);
 
+const postUpdateBodySchema = Joi.object({
+  title: Joi.string().trim().min(5).messages({
+    'string.min': 'Title must be at least 5 characters long.',
+  }),
+  content: Joi.string().trim().min(5).messages({
+    'string.min': 'Content must be at least 5 characters long.',
+  }),
+}).unknown(false);
+
 const createPostSchema = {
   body: postBodySchema
 };
 
 const updatePostSchema = {
   params: idParamSchema,
-  body: postBodySchema
+  body: postUpdateBodySchema
 };
 
 const getPostSchema = {
